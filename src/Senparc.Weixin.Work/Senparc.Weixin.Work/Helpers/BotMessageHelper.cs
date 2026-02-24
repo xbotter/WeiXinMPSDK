@@ -178,11 +178,16 @@ namespace Senparc.Weixin.Work.Helpers
         public static string EncryptResponse(string responseXml, PostModel postModel)
         {
             var timeStamp = SystemTime.Now.Ticks.ToString();
-            var nonce = SystemTime.Now.Ticks.ToString();
+            var nonce = Guid.NewGuid().ToString("N"); // 使用GUID作为nonce确保唯一性
             
             WXBizMsgCrypt msgCrypt = new WXBizMsgCrypt(postModel.Token, postModel.EncodingAESKey, postModel.CorpId);
             string encryptedXml = null;
-            msgCrypt.EncryptMsg(responseXml, timeStamp, nonce, ref encryptedXml);
+            var result = msgCrypt.EncryptMsg(responseXml, timeStamp, nonce, ref encryptedXml);
+            
+            if (result != 0)
+            {
+                throw new Exception($"消息加密失败，错误码：{result}");
+            }
             
             return encryptedXml;
         }
